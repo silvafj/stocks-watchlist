@@ -1,4 +1,6 @@
 import { fetchJSON } from './http';
+import { yahooQuote } from './yahoo';
+// import alphavantage from 'alphavantage';
 
 interface SearchSubmissionResponse {
   data: Submission[];
@@ -22,6 +24,7 @@ export async function searchSubmissions(startAt: Date, subreddit: string): Promi
     'fields',
     ['url', 'author', 'title', 'link_flair_text', 'selftext', 'score', 'created_utc'].join(','),
   );
+  url.searchParams.append('size', '5');
 
   const url_unnescaped = url.toString().replaceAll('%2C', ',');
 
@@ -40,7 +43,7 @@ export interface TickerInfo {
 }
 
 export function extractTickers(submissions: Submission[]): TickerInfo[] {
-  const pattern = new RegExp('\\s[a-zA-Z.]{3,5}\\s', 'g');
+  const pattern = new RegExp('\\s[A-Z]{3,5}\\s', 'g');
   const rocket_symbol = new RegExp('🚀', 'g');
 
   const tickers: TickerInfo[] = [];
@@ -65,6 +68,15 @@ export function extractTickers(submissions: Submission[]): TickerInfo[] {
   return tickers;
 }
 
-export function sanitizeTickers(tickers: TickerInfo[]): TickerInfo[] {
-  return [];
+export async function sanitizeTickers(tickers: TickerInfo[]): Promise<TickerInfo[]> {
+  const unique_tickers = new Set(tickers.map(mention => mention.ticker));
+
+  const response = await yahooQuote(Array.from(unique_tickers.values()));
+  console.log(response);
+  const valid_tickers = response.result
+    .filter(quote => quote.quoteType == 'EQUITY')
+    .map(quote => quote.symbol);
+  console.log(valid_tickers);
+
+  return tickers.filter(mention => valid_tickers.includes(mention.ticker));
 }

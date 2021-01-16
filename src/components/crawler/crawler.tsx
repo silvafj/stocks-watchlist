@@ -18,7 +18,7 @@ export const Crawler: React.FC = () => {
     console.log(submissions);
     let tickers = extractTickers(submissions);
     console.log(tickers);
-    tickers = sanitizeTickers(tickers);
+    tickers = await sanitizeTickers(tickers);
     console.log(tickers);
   }
 
