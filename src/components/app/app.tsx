@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter, Link, Route, RouteComponentProps, withRouter } from 'react-router-dom';
 import ReactGA, { FieldsObject } from 'react-ga';
 import { Layout, Menu } from 'antd';
@@ -9,12 +9,16 @@ import Settings from '../../routes/settings';
 import logo from '../../assets/logo.svg';
 
 import './app.css';
+import Crawler from '../crawler';
 
 const { Header, Sider, Content } = Layout;
 
 // ReactGA.initialize('UA-50201175-2', { testMode: process.env.NODE_ENV !== 'production' });
 
-const withTracker = <P extends RouteComponentProps>(WrappedComponent: React.ComponentType<P>, options: FieldsObject = {}) => {
+const withTracker = <P extends RouteComponentProps>(
+  WrappedComponent: React.ComponentType<P>,
+  options: FieldsObject = {},
+) => {
   const trackPage = (page: string) => {
     // ReactGA.set({ page, ...options });
     // ReactGA.pageview(page);
@@ -60,6 +64,7 @@ export const App: React.FC = () => (
           <img src={logo} className='icon' alt='logo' />
           <a href='.'>Stocks Watchlist</a>
         </div>
+        <Crawler />
         <div className='links'>
           <a href='https://github.com/silvafj/stocks-watchlist'>GitHub</a>
         </div>
