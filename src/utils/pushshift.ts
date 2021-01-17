@@ -44,7 +44,7 @@ export interface SymbolInfo {
 }
 
 export function extractSymbols(submissions: Submission[]): SymbolInfo[] {
-  const pattern = new RegExp('\\s[A-Z]{3,5}\\s', 'g');
+  const pattern = new RegExp('\\$?([0-9A-Z]{1,5}|[0-9]{6})(\\.[A-Z]{1,2})?(?![\\w])', 'g');
   const rocket_symbol = new RegExp('🚀', 'g');
 
   const symbols: SymbolInfo[] = [];
@@ -55,7 +55,7 @@ export function extractSymbols(submissions: Submission[]): SymbolInfo[] {
 
     submission_symbols.forEach(symbol =>
       symbols.push({
-        symbol: symbol.toUpperCase().trim(),
+        symbol: symbol.toUpperCase().trim().replace(/^\$+/g, ''),
         mentioned_in: 'submission',
         author: submission.author,
         created_utc: submission.created_utc,

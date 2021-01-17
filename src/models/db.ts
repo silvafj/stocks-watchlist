@@ -11,15 +11,9 @@ export class StocksWatchlistDB extends Dexie {
     super('StocksWatchlistDB');
 
     this.version(1).stores({
-      redditSymbols: 'symbol',
+      redditSymbols: '[symbol+url], symbol',
     });
   }
 }
 
 export const db = new StocksWatchlistDB();
-
-export function resetDatabase() {
-  return db.transaction('rw', db.redditSymbols, async () => {
-    await Promise.all(db.tables.map(table => table.clear()));
-  });
-}
