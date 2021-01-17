@@ -5,11 +5,11 @@ import { Layout, Menu } from 'antd';
 
 import Dashboard from '../../routes/dashboard';
 import Settings from '../../routes/settings';
+import Crawler from '../crawler';
 
 import logo from '../../assets/logo.svg';
 
 import './app.css';
-import Crawler from '../crawler';
 
 const { Header, Sider, Content } = Layout;
 

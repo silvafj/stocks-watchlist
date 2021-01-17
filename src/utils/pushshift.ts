@@ -32,8 +32,9 @@ export async function searchSubmissions(startAt: Date, subreddit: string): Promi
   return submissions.data;
 }
 
-export interface TickerInfo {
-  ticker: string;
+export interface SymbolInfo {
+  symbol: string;
+  mentioned_in: 'submission' | 'comment';
   url: string;
   author: string;
   link_flair_text: string;
@@ -42,19 +43,20 @@ export interface TickerInfo {
   rockets: number;
 }
 
-export function extractTickers(submissions: Submission[]): TickerInfo[] {
+export function extractSymbols(submissions: Submission[]): SymbolInfo[] {
   const pattern = new RegExp('\\s[A-Z]{3,5}\\s', 'g');
   const rocket_symbol = new RegExp('🚀', 'g');
 
-  const tickers: TickerInfo[] = [];
+  const symbols: SymbolInfo[] = [];
   submissions.forEach(submission => {
     const full_text = ' ' + submission.title + ' ' + submission.selftext + ' ';
-    const submission_tickers = new Set(full_text.match(pattern) || []);
+    const submission_symbols = new Set(full_text.match(pattern) || []);
     const rockets_count = (full_text.match(rocket_symbol) || []).length;
 
-    submission_tickers.forEach(ticker =>
-      tickers.push({
-        ticker: ticker.toUpperCase().trim(),
+    submission_symbols.forEach(symbol =>
+      symbols.push({
+        symbol: symbol.toUpperCase().trim(),
+        mentioned_in: 'submission',
         author: submission.author,
         created_utc: submission.created_utc,
         link_flair_text: submission.link_flair_text,
@@ -65,18 +67,18 @@ export function extractTickers(submissions: Submission[]): TickerInfo[] {
     );
   });
 
-  return tickers;
+  return symbols;
 }
 
-export async function sanitizeTickers(tickers: TickerInfo[]): Promise<TickerInfo[]> {
-  const unique_tickers = new Set(tickers.map(mention => mention.ticker));
+export async function sanitizeSymbols(symbols: SymbolInfo[]): Promise<SymbolInfo[]> {
+  const unique_symbols = new Set(symbols.map(mention => mention.symbol));
 
-  const response = await yahooQuote(Array.from(unique_tickers.values()));
+  const response = await yahooQuote(Array.from(unique_symbols.values()));
   console.log(response);
-  const valid_tickers = response.result
+  const valid_symbols = response.result
     .filter(quote => quote.quoteType == 'EQUITY')
     .map(quote => quote.symbol);
-  console.log(valid_tickers);
+  console.log(valid_symbols);
 
-  return tickers.filter(mention => valid_tickers.includes(mention.ticker));
+  return symbols.filter(mention => valid_symbols.includes(mention.symbol));
 }

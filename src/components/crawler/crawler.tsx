@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from 'antd';
 
-import './crawler.css';
 import {
-  extractTickers,
-  sanitizeTickers,
+  extractSymbols,
+  sanitizeSymbols,
   searchSubmissions,
   Submission,
 } from '../../utils/pushshift';
+import { db } from '../../models/db';
+
+import './crawler.css';
 
 export const Crawler: React.FC = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -16,10 +18,12 @@ export const Crawler: React.FC = () => {
     const submissions = await searchSubmissions(new Date(2021, 0, 16), 'pennystocks');
     setSubmissions(submissions);
     console.log(submissions);
-    let tickers = extractTickers(submissions);
-    console.log(tickers);
-    tickers = await sanitizeTickers(tickers);
-    console.log(tickers);
+    let symbols = extractSymbols(submissions);
+    console.log(symbols);
+    symbols = await sanitizeSymbols(symbols);
+    console.log(symbols);
+
+    await db.redditSymbols.bulkAdd(symbols);
   }
 
   return <Button onClick={() => crawl()}>Crawl</Button>;
