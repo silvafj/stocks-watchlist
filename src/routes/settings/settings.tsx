@@ -11,9 +11,5 @@ export const Settings: React.FC = () => {
     await db.open();
   }
 
-  return (
-    <Layout>
-      <Button onClick={() => deleteDB()}>Delete database</Button>
-    </Layout>
-  );
+  return <Button onClick={() => deleteDB()}>Delete database</Button>;
 };

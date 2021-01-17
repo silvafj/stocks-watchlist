@@ -79,6 +79,7 @@ export async function yahooQuote(symbols: string[]): Promise<QuoteResponse> {
   url.searchParams.append('symbols', symbols.join(','));
 
   const url_unnescaped = url.toString().replaceAll('%2C', ',');
+  console.log(url_unnescaped);
 
   const response = await fetchJSON<YahooFinanceQuoteResponse>(url_unnescaped);
   return response.quoteResponse;

@@ -19,7 +19,7 @@ export const Crawler: React.FC = () => {
     let intervalId: number | undefined;
 
     if (enabled) {
-      intervalId = window.setInterval(() => crawl(), 1000 * 20);
+      intervalId = window.setInterval(() => crawl(), 1000 * 60 * 15);
     } else {
       clearInterval(intervalId);
     }
@@ -37,7 +37,11 @@ export const Crawler: React.FC = () => {
     const submissions = await searchSubmissions(startDate, 'pennystocks');
     let symbols = extractSymbols(submissions);
     symbols = await sanitizeSymbols(symbols);
-    await db.redditSymbols.bulkAdd(symbols);
+    try {
+      await db.redditSymbols.bulkAdd(symbols);
+    } catch (error) {
+      console.log(error);
+    }
 
     setFetching(false);
   }

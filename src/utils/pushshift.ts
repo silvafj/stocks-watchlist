@@ -71,14 +71,16 @@ export function extractSymbols(submissions: Submission[]): SymbolInfo[] {
 }
 
 export async function sanitizeSymbols(symbols: SymbolInfo[]): Promise<SymbolInfo[]> {
+  if (symbols.length == 0) {
+    return symbols;
+  }
+
   const unique_symbols = new Set(symbols.map(mention => mention.symbol));
 
   const response = await yahooQuote(Array.from(unique_symbols.values()));
-  console.log(response);
   const valid_symbols = response.result
     .filter(quote => quote.quoteType == 'EQUITY')
     .map(quote => quote.symbol);
-  console.log(valid_symbols);
 
   return symbols.filter(mention => valid_symbols.includes(mention.symbol));
 }
