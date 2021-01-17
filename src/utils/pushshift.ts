@@ -24,9 +24,9 @@ export async function searchSubmissions(startAt: Date, subreddit: string): Promi
     'fields',
     ['url', 'author', 'title', 'link_flair_text', 'selftext', 'score', 'created_utc'].join(','),
   );
-  url.searchParams.append('size', '5');
 
   const url_unnescaped = url.toString().replaceAll('%2C', ',');
+  console.log(url_unnescaped);
 
   const submissions = await fetchJSON<SearchSubmissionResponse>(url_unnescaped);
   return submissions.data;

@@ -65,9 +65,6 @@ export const App: React.FC = () => (
           <a href='.'>Stocks Watchlist</a>
         </div>
         <Crawler />
-        <div className='links'>
-          <a href='https://github.com/silvafj/stocks-watchlist'>GitHub</a>
-        </div>
       </Header>
       <SiderWithRouter />
       <Content>

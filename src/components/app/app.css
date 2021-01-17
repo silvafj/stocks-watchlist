@@ -41,12 +41,8 @@ body, #root, #root>.ant-layout {
   }
 }
 
-.ant-layout-header .links {
+.ant-layout-header .crawler {
   float: right;
-}
-
-.ant-layout-header .links a {
-  margin: 0 10px;
 }
 
 .ant-layout-sider {

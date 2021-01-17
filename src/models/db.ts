@@ -11,7 +11,7 @@ export class StocksWatchlistDB extends Dexie {
     super('StocksWatchlistDB');
 
     this.version(1).stores({
-      redditSymbols: '[symbol+url], symbol',
+      redditSymbols: '[symbol+url], symbol, created_utc',
     });
   }
 }
