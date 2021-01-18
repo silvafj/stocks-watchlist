@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Card, Col, Row, Table } from 'antd';
+import { Card, Col, Row, Space, Table } from 'antd';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../models/db';
 import dateformat from 'dateformat';
 
 import './dashboard.css';
+import { SymbolInfo } from '../../utils/pushshift';
 
 interface SymbolAgg {
   key: string;
@@ -14,9 +15,17 @@ interface SymbolAgg {
 }
 
 export const Dashboard: React.FC = () => {
+  const [selectedSymbol, setSelectedSymbol] = useState('');
+
   const latestSymbols = useLiveQuery(() =>
-    db.redditSymbols.orderBy('created_utc').reverse().limit(10).toArray(),
+    db.redditSymbols.orderBy('created_utc').reverse().limit(15).toArray(),
   );
+
+  const symbolMentions = useLiveQuery(async () => {
+    const mentions = await db.redditSymbols.where('symbol').equals(selectedSymbol);
+    const sorted = await mentions.sortBy('created_utc');
+    return sorted.reverse();
+  }, [selectedSymbol]);
 
   async function querySymbolStats(): Promise<Array<SymbolAgg>> {
     const counts: Record<string, number> = {};
@@ -41,11 +50,16 @@ export const Dashboard: React.FC = () => {
 
   const symbolStats = useLiveQuery(() => querySymbolStats());
 
+  async function deleteInvalidSymbols(symbol: string) {
+    await db.redditSymbols.where('symbol').equals(symbol).delete();
+  }
+
   const columns = [
     {
       title: 'Symbol',
       dataIndex: 'symbol',
       key: 'symbol',
+      sorter: (a: SymbolAgg, b: SymbolAgg) => a.symbol.localeCompare(b.symbol),
     },
     {
       title: '# Mentions',
@@ -58,16 +72,37 @@ export const Dashboard: React.FC = () => {
       dataIndex: 'last_mention',
       key: 'last_mention',
     },
+    {
+      title: 'Actions',
+      key: 'actions',
+      // eslint-disable-next-line react/display-name
+      render: (text: string, record: SymbolAgg) => (
+        <Space size='middle'>
+          <a key={record.symbol} onClick={() => deleteInvalidSymbols(record.symbol)}>
+            Delete
+          </a>
+        </Space>
+      ),
+    },
   ];
 
   return (
     <div>
       <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
         <Col span='18'>
-          <Table dataSource={symbolStats} columns={columns} />
+          <Table
+            dataSource={symbolStats}
+            columns={columns}
+            rowSelection={{
+              type: 'radio',
+              onChange: (selectedRowKeys: React.Key[], selectedRows: SymbolAgg[]) => {
+                setSelectedSymbol(selectedRows[0].symbol);
+              },
+            }}
+          />
         </Col>
         <Col span='6'>
-          <Card title='Latest mentions' bordered={false} size='small'>
+          <Card title='Latest mentions' bordered={false} size='small' className='latest-mentions'>
             {(latestSymbols || []).map((mention, index) => (
               <div key={index}>
                 <a href={mention.url || ''} target='_blank' rel='noreferrer'>
@@ -84,7 +119,19 @@ export const Dashboard: React.FC = () => {
       </Row>
       <Row>
         <Col>Selected ticker graph</Col>
-        <Col>Selected ticker all mentions</Col>
+        <Col>
+          <Card title='Symbol mentions' bordered={false} size='small' className='symbol-mentions'>
+            {(symbolMentions || []).map((mention, index) => (
+              <div key={index}>
+                <a href={mention.url || ''} target='_blank' rel='noreferrer'>
+                  {dateformat(mention.created_utc * 1000, 'yyyy-mm-dd hh:MM')}
+                </a>
+                {' / '}
+                {mention.link_flair_text}
+              </div>
+            ))}
+          </Card>
+        </Col>
       </Row>
     </div>
   );

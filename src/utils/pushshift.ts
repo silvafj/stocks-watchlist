@@ -24,6 +24,7 @@ export async function searchSubmissions(startAt: Date, subreddit: string): Promi
     'fields',
     ['url', 'author', 'title', 'link_flair_text', 'selftext', 'score', 'created_utc'].join(','),
   );
+  url.searchParams.append('selftext', '![removed]');
 
   const url_unnescaped = url.toString().replaceAll('%2C', ',');
   console.log(url_unnescaped);
@@ -44,7 +45,7 @@ export interface SymbolInfo {
 }
 
 export function extractSymbols(submissions: Submission[]): SymbolInfo[] {
-  const pattern = new RegExp('\\$?([0-9A-Z]{1,5}|[0-9]{6})(\\.[A-Z]{1,2})?(?![\\w])', 'g');
+  const pattern = new RegExp('\\$?[0-9A-Z]{2,5}(\\.[A-Z]{1,2})?(?![\\w])', 'g');
   const rocket_symbol = new RegExp('🚀', 'g');
 
   const symbols: SymbolInfo[] = [];
@@ -71,6 +72,8 @@ export function extractSymbols(submissions: Submission[]): SymbolInfo[] {
 }
 
 export async function sanitizeSymbols(symbols: SymbolInfo[]): Promise<SymbolInfo[]> {
+  const invalid_symbols = ['DD', 'E', 'A', 'AT', 'CEO', 'WHEN', 'IP', 'HUGE'];
+
   if (symbols.length == 0) {
     return symbols;
   }
@@ -82,5 +85,7 @@ export async function sanitizeSymbols(symbols: SymbolInfo[]): Promise<SymbolInfo
     .filter(quote => quote.quoteType == 'EQUITY')
     .map(quote => quote.symbol);
 
-  return symbols.filter(mention => valid_symbols.includes(mention.symbol));
+  return symbols.filter(
+    mention => valid_symbols.includes(mention.symbol) && !invalid_symbols.includes(mention.symbol),
+  );
 }

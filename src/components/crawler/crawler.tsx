@@ -12,14 +12,14 @@ import { db } from '../../models/db';
 import './crawler.css';
 
 export const Crawler: React.FC = () => {
-  const [enabled, setEnabled] = useState<boolean>(true);
-  const [fetching, setFetching] = useState<boolean>(false);
+  const [enabled, setEnabled] = useState(true);
+  const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
     let intervalId: number | undefined;
 
     if (enabled) {
-      intervalId = window.setInterval(() => crawl(), 1000 * 60 * 15);
+      intervalId = window.setInterval(() => crawl(), 1000 * 60 * 5);
     } else {
       clearInterval(intervalId);
     }
@@ -30,8 +30,10 @@ export const Crawler: React.FC = () => {
   async function crawl() {
     setFetching(true);
 
+    const month_ago = new Date();
+    month_ago.setMonth(month_ago.getMonth() - 1);
     const lastSymbol = await db.redditSymbols.orderBy('created_utc').last();
-    const startDate = lastSymbol ? new Date(lastSymbol.created_utc * 1000) : new Date(2021, 0, 1);
+    const startDate = lastSymbol ? new Date(lastSymbol.created_utc * 1000) : month_ago;
     console.log(startDate);
 
     const submissions = await searchSubmissions(startDate, 'pennystocks');

@@ -1,0 +1,9 @@
+.latest-mentions > div {
+    overflow: hidden;
+    white-space: nowrap;    
+}
+
+.symbol-mentions .ant-card-body {
+    max-height: 450px;
+    overflow: auto;
+}
