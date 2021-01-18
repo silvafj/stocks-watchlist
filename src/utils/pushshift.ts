@@ -1,6 +1,7 @@
 import { fetchJSON } from './http';
 import { yahooQuote } from './yahoo';
-// import alphavantage from 'alphavantage';
+
+import { db } from '../models/db';
 
 interface SearchSubmissionResponse {
   data: Submission[];
@@ -24,7 +25,6 @@ export async function searchSubmissions(startAt: Date, subreddit: string): Promi
     'fields',
     ['url', 'author', 'title', 'link_flair_text', 'selftext', 'score', 'created_utc'].join(','),
   );
-  url.searchParams.append('selftext', '![removed]');
 
   const url_unnescaped = url.toString().replaceAll('%2C', ',');
   console.log(url_unnescaped);
@@ -72,7 +72,7 @@ export function extractSymbols(submissions: Submission[]): SymbolInfo[] {
 }
 
 export async function sanitizeSymbols(symbols: SymbolInfo[]): Promise<SymbolInfo[]> {
-  const invalid_symbols = ['DD', 'E', 'A', 'AT', 'CEO', 'WHEN', 'IP', 'HUGE'];
+  const invalid_symbols = await db.bannedSymbols.orderBy(':id').primaryKeys();
 
   if (symbols.length == 0) {
     return symbols;

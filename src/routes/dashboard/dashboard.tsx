@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useDebugValue, useState } from 'react';
 import { Card, Col, Row, Space, Table } from 'antd';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../models/db';
 import dateformat from 'dateformat';
 
 import './dashboard.css';
-import { SymbolInfo } from '../../utils/pushshift';
 
 interface SymbolAgg {
   key: string;
@@ -51,6 +50,7 @@ export const Dashboard: React.FC = () => {
   const symbolStats = useLiveQuery(() => querySymbolStats());
 
   async function deleteInvalidSymbols(symbol: string) {
+    await db.bannedSymbols.add({ symbol: symbol });
     await db.redditSymbols.where('symbol').equals(symbol).delete();
   }
 
